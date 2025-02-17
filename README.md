@@ -8,6 +8,31 @@ used an OpenCV function that requires more points) all correctly-ish, but
 struggled to render a grid on the defined plane. That's the point where I gave
 up.
 
+# Why?
+
+Wanted to find out how well ChatGPT does at a problem that is relatively common
+in computer vision.
+
+# Conclusions
+
+It performed well enough at generating the boilerplate code, especially the
+OpenGL parts, which is something that I have to refresh my memory every time I
+set it up.
+
+As such it looks very useful for getting started on writing such an
+application, and indeed might save many hours especially if working in a
+language that you're not used to.
+
+However it struggles with the coordinate transformations required to do proper
+3D rendering on top of the 2D texture. Still, a great starting point to fix the
+issues and build on top of.
+
+# Future work
+
+Need to look through the code and see what it missed at each state. Especially
+curious if the grid rendering issue is because of 1. calibration going wrong,
+2. coordinate transformation issue, 3. a rendering issue, or 4. something else.
+
 # Attempts
 
 ## `1_calib.py`
