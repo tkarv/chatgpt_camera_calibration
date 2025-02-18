@@ -13,6 +13,10 @@ up.
 Wanted to find out how well ChatGPT does at a problem that is relatively common
 in computer vision.
 
+# How?
+
+I interacted with ChatGPT through the web interface. I used "Reason" mode whenever it felt like it could help. I tried to give some hints based on what I thought might have been wrong in each stage, but without any particular verification efforts beforehand. As such some of them may have been misleading.
+
 # Conclusions
 
 It performed well enough at generating the boilerplate code, especially the
@@ -27,7 +31,9 @@ However it struggles with the coordinate transformations required to do proper
 3D rendering on top of the 2D texture. Still, a great starting point to fix the
 issues and build on top of.
 
-# Fixed app
+I'm also curious how well it would work if the interaction was done without giving any hints at all.
+
+# (UPDATE) Fixed app
 
 I went ahead and fixed the ChatGPT implementation. It took about an hour of working.
 Most of the time was yet again spent recalling what kind of transformations are necessary
@@ -39,7 +45,7 @@ Here's a(n incomplete) list of the things that were wrong with the ChatGPT code:
 2. The code wasn't actually calculating camera calibration based on the image coordinates but rather the screen coordinates from OpenGL. Switched to calculating based on image coordinates.
 3. Due to above the rendering code stopped working as it was based on the assumption that the calibration was done based on screen coordinates. Spent a bit of time to add one more transformation from screen to image plane. Actually this was accomplished mostly due to this wonderful tutorial:
 
-[https://amytabb.com/tips/tutorials/2019/06/28/OpenCV-to-OpenGL-tutorial-essentials/]
+https://amytabb.com/tips/tutorials/2019/06/28/OpenCV-to-OpenGL-tutorial-essentials/
 
 # Future work
 
