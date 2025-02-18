@@ -84,9 +84,9 @@ def draw_dots():
     glPointSize(5.0)
     glBegin(GL_POINTS)
     for x, y in click_coordinates:
-        corrected_y = height - y
-        # w_x, w_y = image2window(x, y)
-        glVertex2f(x, corrected_y)
+        # corrected_y = height - y
+        w_x, w_y = image2window(x, y)
+        glVertex2f(w_x, w_y)
     glEnd()
     glEnable(GL_TEXTURE_2D)
 
@@ -149,15 +149,30 @@ def display():
         # Use standard formulas:
         # left = -c_x * near / f_x, right = (width - c_x)* near / f_x,
         # bottom = -c_y * near / f_y, top = (height - c_y)* near / f_y
+
+        # K_GL and NDC built from this tutorial:
+        # ref: https://amytabb.com/tips/tutorials/2019/06/28/OpenCV-to-OpenGL-tutorial-essentials/
         c_x = camera_matrix[0, 2]
         c_y = camera_matrix[1, 2]
         f_x = camera_matrix[0, 0]
         f_y = camera_matrix[1, 1]
-        left = -c_x * near / f_x
-        right = (width - c_x) * near / f_x
-        bottom = -c_y * near / f_y
-        top = (height - c_y) * near / f_y
-        glFrustum(left, right, bottom, top, near, far)
+        A = -(near + far)
+        B = near * far
+        K_GL = np.array([
+            [-f_x, 0, (video_width - c_x), 0],
+            [0, -f_y, (video_height - c_y), 0],
+            [0, 0, A, B],
+            [0, 0, 1, 0]
+        ], dtype=np.float32)
+
+        NDC = np.array([
+            [-(2.0 / video_width), 0, 0, 1],
+            [0, 2.0 / video_height, 0, -1],
+            [0, 0, -2.0 / (far - near), (-(far + near)) / (far - near)],
+            [0, 0, 0, 1]
+        ], dtype=np.float32)
+
+        glMultMatrixf((NDC @ K_GL).T)
 
         # Build the modelview matrix from the calibration extrinsics.
         glMatrixMode(GL_MODELVIEW)
@@ -170,8 +185,6 @@ def display():
         M[:3, :3] = R
         M[:3, 3] = tvec.flatten()
 
-        M[1, :] *= -1
-        M[2, :] *= -1
         view_matrix = M
 
         glLoadMatrixf(view_matrix.T)  # OpenGL expects column-major order
@@ -208,15 +221,14 @@ def image2window(x, y):
     return window_x, corrected_y # window_y
 
 def mouse_click(button, state, x, y):
-    print(f"{x}, {y}")
     global click_coordinates, width, height, video_width, video_height
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
         # Convert y from top-left to bottom-left
         if len(click_coordinates) >= 4:
             click_coordinates.pop(0)
-        # video_x, video_y = window2image(x, y)
-        click_coordinates.append((x, y))
-        print(f"Click at: ({x}, {y})")
+        video_x, video_y = window2image(x, y)
+        click_coordinates.append((video_x, video_y))
+        print(f"Click at: ({video_x}, {video_y})")
 
 def compute_camera_parameters():
     global calibration_done, rvec, tvec, camera_matrix, click_coordinates, video_width
@@ -226,10 +238,10 @@ def compute_camera_parameters():
 
     # Use the stored pixel coordinates (origin at bottom-left)
     image_points = np.array(click_coordinates, dtype=np.float32)
-    focal_length = width  # Rough approximation
+    focal_length = video_width  # Rough approximation
     camera_matrix = np.array([
-        [focal_length, 0, width / 2],
-        [0, focal_length, height / 2],
+        [focal_length, 0, video_width / 2],
+        [0, focal_length, video_height / 2],
         [0, 0, 1]
     ], dtype=np.float32)
     dist_coeffs = np.zeros((4, 1), dtype=np.float32)
