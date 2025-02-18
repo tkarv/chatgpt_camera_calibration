@@ -27,11 +27,23 @@ However it struggles with the coordinate transformations required to do proper
 3D rendering on top of the 2D texture. Still, a great starting point to fix the
 issues and build on top of.
 
+# Fixed app
+
+I went ahead and fixed the ChatGPT implementation. It took about an hour of working.
+Most of the time was yet again spent recalling what kind of transformations are necessary
+to switch from OpenCV to OpenGL.
+
+Here's a(n incomplete) list of the things that were wrong with the ChatGPT code:
+
+1. Colors were not actually black but rather too dark -- fixed by calling glEnable(GL_TEXTURE_2D) before rendering the dots / lines.
+2. The code wasn't actually calculating camera calibration based on the image coordinates but rather the screen coordinates from OpenGL. Switched to calculating based on image coordinates.
+3. Due to above the rendering code stopped working as it was based on the assumption that the calibration was done based on screen coordinates. Spent a bit of time to add one more transformation from screen to image plane. Actually this was accomplished mostly due to this wonderful tutorial:
+
+[https://amytabb.com/tips/tutorials/2019/06/28/OpenCV-to-OpenGL-tutorial-essentials/]
+
 # Future work
 
-Need to look through the code and see what it missed at each state. Especially
-curious if the grid rendering issue is because of 1. calibration going wrong,
-2. coordinate transformation issue, 3. a rendering issue, or 4. something else.
+Need to add proper intrinsics calibration.
 
 # Attempts
 
